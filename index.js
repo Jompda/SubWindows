@@ -35,10 +35,8 @@ class SubWindow {
 
 	moveToTop() {
 		const holder = document.getElementById('subwindow-holder')
-		if (holder.childElementCount > 1) {
-			holder.insertBefore(this.rootNode, holder.lastChild)
-			holder.insertBefore(holder.lastChild, this.rootNode)
-		}
+		if (holder.childElementCount > 1)
+			holder.lastChild.after(this.rootNode)
 	}
 }
 
