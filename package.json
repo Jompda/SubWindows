@@ -1,0 +1,8 @@
+{
+	"name": "subwindows",
+	"version": "1.0.0",
+	"description": "Provides an easy way of creating a sub-window system in a browser environment.",
+	"main": "index.js",
+	"author": "Joni Rapo",
+	"license": "ISC"
+}
