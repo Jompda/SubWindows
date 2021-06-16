@@ -1,12 +1,10 @@
 "use strict"
-export {
-	SubWindow
-}
 
 
 class SubWindow {
 	constructor(x, y, w, h) {
 		this.x = x; this.y = y; this.w = w; this.h = h
+
 		const root = this.rootNode = document.createElement('div')
 		root.onmousedown = () => this.moveToTop()
 		root.style.position = 'absolute'
@@ -34,9 +32,18 @@ class SubWindow {
 
 
 	moveToTop() {
-		const holder = document.getElementById('subwindow-holder')
+		const holder = this.rootNode.parentElement
 		if (holder.childElementCount > 1)
 			holder.lastChild.after(this.rootNode)
+	}
+
+
+	/**
+	 * @param {HTMLElement} element 
+	 */
+	setContent(element) {
+		if (this.viewportNode.hasChildNodes()) this.viewportNode.textContent = ''
+		this.viewportNode.appendChild(element)
 	}
 }
 
@@ -85,9 +92,38 @@ class SubWindowControls {
 		}
 		for (let e of ['mousedown', 'mousemove'])
 			tempButton.addEventListener(e, ev => ev.stopPropagation())
-
 		tb.appendChild(tempButton)
+
 		return tb
+	}
+}
+
+
+/**
+ * Ready the page for SubWindows.
+ * @param {HTMLElement} holder 
+ */
+export default function setupSubWindows(holder) {
+	if (!holder) holder = document.createElement('div')
+	holder.style.position = 'absolute'
+	document.body.appendChild(holder)
+
+
+	/**
+	 * @param {number} x 
+	 * @param {number} y 
+	 * @param {number} w 
+	 * @param {number} h 
+	 */
+	function createSubWindow(x, y, w, h) {
+		const subWindow = new SubWindow(x, y, w, h)
+		holder.appendChild(subWindow.rootNode)
+		return subWindow
+	}
+
+
+	return {
+		createSubWindow
 	}
 }
 
