@@ -2,32 +2,41 @@
 
 
 class SubWindow {
-	constructor(x, y, w, h) {
-		this.x = x; this.y = y; this.w = w; this.h = h
+	constructor(options) {
+		this.width = options.width || 200
+		this.height = options.height || 200
+		this.x = options.x || window.innerWidth / 2 - this.width / 2
+		this.y = options.y || window.innerHeight / 4 - this.height / 2
 
 		const root = this.rootNode = document.createElement('div')
 		root.onmousedown = () => this.moveToTop()
 		root.style.position = 'absolute'
 		root.style.userSelect = 'none'
+		root.style.overflow = 'hidden'
 		this.updateTranslate()
-		root.style.width = w + 'px'
-		root.style.height = h + 'px'
+		root.style.width = this.width + 'px'
+		root.style.height = this.height + 'px'
 		root.style.backgroundColor = 'transparent'
-		root.style.border = 'solid 1px black' // temp
-		this.controls = new SubWindowControls(this)
+		root.style.border = 'solid 1px black'
+		root.style.borderRadius = '10px'
+
+		this.onclose = undefined
+		this.onresize = undefined
+		createSubWindowControls(this)
 
 		const vp = this.viewportNode = document.createElement('div')
 		vp.style.position = 'absolute'
 		vp.style.userSelect = 'text'
 		vp.style.backgroundColor = 'gray'
 		vp.style.width = '100%'
-		vp.style.height = `calc(100% - ${SubWindowControls.tbHeight})`
+		vp.style.height = `calc(100% - ${tbHeight})`
+		vp.style.overflow = 'auto'
 		root.appendChild(vp)
 	}
 
 
 	updateTranslate() {
-		this.rootNode.style.transform = `translate(${this.x}px, ${this.y}px)`
+		this.rootNode.style.transform = `translate(${Math.floor(this.x)}px, ${Math.floor(this.y)}px)`
 	}
 
 
@@ -35,6 +44,12 @@ class SubWindow {
 		const holder = this.rootNode.parentElement
 		if (holder.childElementCount > 1)
 			holder.lastChild.after(this.rootNode)
+	}
+
+
+	close() {
+		if (this.onclose) Object.apply(null, this.onclose, arguments)
+		this.rootNode.remove()
 	}
 
 
@@ -48,31 +63,26 @@ class SubWindow {
 }
 
 
-class SubWindowControls {
-	static tbHeight = '20px'
+const tbHeight = '20px'
+/**
+ * @param {SubWindow} subWindow 
+ */
+function createSubWindowControls(subWindow) {
+	subWindow.rootNode.appendChild(createTopBar())
 
 
-	/**
-	 * @param {SubWindow} sw 
-	 */
-	constructor(sw) {
-		this.subWindow = sw
-		sw.rootNode.appendChild(this.topBar = this.createTopBar())
-	}
-
-
-	createTopBar() {
+	function createTopBar() {
 		const tb = document.createElement('div')
 		tb.style.width = '100%'
-		tb.style.height = SubWindowControls.tbHeight
+		tb.style.height = tbHeight
 		tb.style.backgroundColor = 'cyan'
 
 		{	// Drag system
 			let oldX, oldY
 			const dragger = (event) => {
 				const dx = event.x - oldX, dy = event.y - oldY
-				this.subWindow.x += dx; this.subWindow.y += dy
-				this.subWindow.updateTranslate()
+				subWindow.x += dx; subWindow.y += dy
+				subWindow.updateTranslate()
 				oldX = event.x; oldY = event.y
 			}
 			tb.addEventListener('mousedown', (event) => {
@@ -85,10 +95,10 @@ class SubWindowControls {
 		}
 
 		const tempButton = document.createElement('button')
-		tempButton.innerText = 'test'
+		tempButton.textContent = 'test'
 		tempButton.onclick = () => {
-			this.subWindow.moveToTop()
-			console.log('test button clicked at window ', this.subWindow)
+			subWindow.moveToTop()
+			console.log('test button clicked at window ', subWindow)
 		}
 		for (let e of ['mousedown', 'mousemove'])
 			tempButton.addEventListener(e, ev => ev.stopPropagation())
@@ -109,21 +119,49 @@ export default function setupSubWindows(holder) {
 	document.body.appendChild(holder)
 
 
-	/**
-	 * @param {number} x 
-	 * @param {number} y 
-	 * @param {number} w 
-	 * @param {number} h 
-	 */
-	function createSubWindow(x, y, w, h) {
-		const subWindow = new SubWindow(x, y, w, h)
+	function createSubWindow(subWindowOptions) {
+		const subWindow = new SubWindow(subWindowOptions)
 		holder.appendChild(subWindow.rootNode)
 		return subWindow
 	}
 
 
+	/**
+	 * @param {string} message 
+	 * @param {string} defaultValue 
+	 */
+	async function prompt(message, defaultValue) {
+		return new Promise(resolve => {
+			const subWindow = createSubWindow({ width: 200, height: 140 })
+			subWindow.viewportNode.innerHTML = `<div style="text-align:center;"><p>${message}</p></div>`
+
+			const inputField = document.createElement('input')
+			inputField.type = 'text'
+			inputField.value = defaultValue || ''
+
+			const okButton = document.createElement('button'), cancelButton = document.createElement('button')
+			okButton.textContent = 'OK'; cancelButton.textContent = 'Cancel'
+			okButton.style.margin = cancelButton.style.margin = '6px'
+			okButton.onclick = () => {
+				subWindow.close()
+				resolve(inputField.value)
+			}
+			cancelButton.onclick = () => {
+				subWindow.close()
+				resolve(defaultValue)
+			}
+			subWindow.onclose = () => {
+				resolve(defaultValue) // Can get resolved twice but no harm done there, at least to my knowledge.
+			}
+			subWindow.viewportNode.firstChild.append(inputField, okButton, cancelButton)
+			inputField.select()
+		})
+	}
+
+
 	return {
-		createSubWindow
+		createSubWindow,
+		prompt
 	}
 }
 
