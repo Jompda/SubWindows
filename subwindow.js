@@ -11,28 +11,19 @@ export default class SubWindow {
 		this.y = options.y || window.innerHeight / 4 - this.height / 2
 
 		const root = this.rootNode = document.createElement('div')
-		root.onmousedown = () => this.moveToTop()
-		root.style.position = 'absolute'
-		root.style.userSelect = 'none'
-		root.style.overflow = 'hidden'
-		this.updateTranslate()
+		root.className = 'subwindow-root-node'
 		root.style.width = this.width + 'px'
 		root.style.height = this.height + 'px'
-		root.style.backgroundColor = 'transparent'
-		root.style.border = 'solid 1px black'
-		root.style.borderRadius = '10px'
+		root.onmousedown = () => this.moveToTop()
+		this.updateTranslate()
 
 		this.onclose = undefined
 		this.onresize = undefined
 		createSubWindowControls(this)
 
 		const vp = this.viewportNode = document.createElement('div')
-		vp.style.position = 'absolute'
-		vp.style.userSelect = 'text'
-		vp.style.backgroundColor = 'gray'
-		vp.style.width = '100%'
+		vp.className = 'subwindow-viewport-node'
 		vp.style.height = `calc(100% - ${tbHeight})`
-		vp.style.overflow = 'auto'
 		root.appendChild(vp)
 	}
 
@@ -74,14 +65,8 @@ function createSubWindowControls(subWindow) {
 
 	function createTopBar() {
 		const tb = document.createElement('div')
-		tb.style.position = 'relative'
-		tb.style.width = '100%'
+		tb.className = 'toolbar'
 		tb.style.height = tbHeight
-		tb.style.backgroundColor = 'cyan'
-		tb.style.display = 'flex'
-		tb.style.flexDirection = 'row'
-		tb.style.flexWrap = 'nowrap'
-		tb.style.justifyContent = 'space-between'
 
 		{	// Drag system
 			let oldX, oldY

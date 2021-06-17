@@ -10,6 +10,13 @@ export default function setupSubWindows(holder) {
 	if (!holder) holder = document.createElement('div')
 	holder.style.position = 'absolute'
 	document.body.appendChild(holder)
+	const pathname = new URL(import.meta.url).pathname
+	const directory = pathname.slice(0, pathname.lastIndexOf('/') + 1)
+	requestHttpResource({ url: directory + 'stylesheet.css' }).then(xhr => {
+		const style = document.createElement('style')
+		style.textContent = xhr.responseText
+		document.head.appendChild(style)
+	})
 
 
 	function createSubWindow(subWindowOptions) {
@@ -56,5 +63,26 @@ export default function setupSubWindows(holder) {
 		createSubWindow,
 		prompt
 	}
+}
+
+
+/**
+ * @param {{method: string, url: string, body: string, headers: Object}} param0 
+ * @returns {Promise<XMLHttpRequest>}
+ */
+async function requestHttpResource({ method = 'GET', url, body, headers }) {
+	return new Promise((resolve, reject) => {
+		const xhr = new XMLHttpRequest()
+		xhr.open(method, url)
+		if (headers) Object.getOwnPropertyNames(headers).forEach((headerName) =>
+			xhr.setRequestHeader(headerName, headers[headerName])
+		)
+		xhr.send(body)
+		xhr.onerror = () => reject(xhr)
+		xhr.onload = () => {
+			if (xhr.status != 200) return reject(xhr)
+			resolve(xhr)
+		}
+	})
 }
 
