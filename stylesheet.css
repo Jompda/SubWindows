@@ -1,5 +1,9 @@
 /*SubWindows stylesheet*/
 
+.subwindows-holder {
+	position: absolute;
+}
+
 .subwindow-root-node {
 	position: absolute;
 	user-select: none;

@@ -7,16 +7,20 @@ import SubWindow from './subwindow.js'
  * @param {HTMLElement} holder 
  */
 export default function setupSubWindows(holder) {
-	if (!holder) holder = document.createElement('div')
-	holder.style.position = 'absolute'
-	document.body.appendChild(holder)
-	const href = new URL(import.meta.url).href
-	const directory = href.slice(0, href.lastIndexOf('/') + 1)
-	requestHttpResource({ url: directory + 'stylesheet.css' }).then(xhr => {
-		const style = document.createElement('style')
-		style.textContent = xhr.responseText
-		document.head.appendChild(style)
-	})
+	if (!holder) {
+		holder = document.createElement('div')
+		holder.className = 'subwindows-holder'
+		document.body.appendChild(holder)
+	}
+	{	// Get the CSS
+		const href = new URL(import.meta.url).href
+		const directory = href.slice(0, href.lastIndexOf('/') + 1)
+		requestHttpResource({ url: directory + 'stylesheet.css' }).then(xhr => {
+			const style = document.createElement('style')
+			style.textContent = xhr.responseText
+			document.head.appendChild(style)
+		})
+	}
 
 
 	function createSubWindow(subWindowOptions) {
