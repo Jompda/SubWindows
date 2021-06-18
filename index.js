@@ -10,8 +10,8 @@ export default function setupSubWindows(holder) {
 	if (!holder) holder = document.createElement('div')
 	holder.style.position = 'absolute'
 	document.body.appendChild(holder)
-	const pathname = new URL(import.meta.url).pathname
-	const directory = pathname.slice(0, pathname.lastIndexOf('/') + 1)
+	const href = new URL(import.meta.url).href
+	const directory = href.slice(0, href.lastIndexOf('/') + 1)
 	requestHttpResource({ url: directory + 'stylesheet.css' }).then(xhr => {
 		const style = document.createElement('style')
 		style.textContent = xhr.responseText
