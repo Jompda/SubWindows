@@ -11,7 +11,7 @@ export default class SubWindow {
 		this.y = options.y || window.innerHeight / 4 - this.height / 2
 
 		const root = this.rootNode = document.createElement('div')
-		root.className = 'subwindow-root-node'
+		root.className = 'subwindow-root'
 		root.style.width = this.width + 'px'
 		root.style.height = this.height + 'px'
 		root.onmousedown = () => this.moveToTop()
@@ -22,7 +22,7 @@ export default class SubWindow {
 		createSubWindowControls(this)
 
 		const vp = this.viewportNode = document.createElement('div')
-		vp.className = 'subwindow-viewport-node'
+		vp.className = 'subwindow-viewport'
 		vp.style.height = `calc(100% - ${tbHeight})`
 		root.appendChild(vp)
 	}
